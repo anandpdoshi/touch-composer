@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+        <meta name="msapplication-tap-highlight" content="no" />
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <script src="lib/Tone.min.js"></script>
+        <script src="lib/color.js"></script>
+        <script src="lib/ntc.js"></script>
+        <script src='lib/responsivevoice.js'></script>
+        <!-- // <script src="https://jsconsole.com/js/remote.js?alsjdlqijwlsajdasadhkasjhdjklqwueihq"></script> -->
+
+
+        <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+        <title>Touch Composer</title>
+
+        <style>
+            body {
+                font-family:
+                /* 1 */ -apple-system, BlinkMacSystemFont,
+                /* 2 */ "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans",
+                /* 3 */ "Helvetica Neue", sans-serif;
+            }
+
+            .picture {
+                display: block;
+                position: absolute;
+                left: 0;
+                right: 0;
+                top: 50px;
+                bottom: 0;
+            }
+
+            .log {
+                display: block;
+                z-index: 1000;
+                background-color: rgba(255, 255, 255, 0.5);
+                position: absolute;
+                left: 0;
+                right: 50%;
+                top: 50px;
+                bottom: 75%;
+                overflow: auto;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="navbar">
+            <form>
+                <input type="file" id="fileElem" multiple accept="image/*" style="display:none" onchange="handleImage(this.files)">
+                <label class='select-image' for="fileElem">Select Image</label>
+                <!-- <input type="file" name="image" class="load-image" /> -->
+                <span style='padding-left: 30px;'>
+                    <label for="sound"><input type="radio" name="mode" id="sound" value="sound" checked selected> Sound</label>
+                    <label for="speak"><input type="radio" name="mode" id="speak" value="speak"> Speak</label>
+                </span>
+
+            </form>
+
+        </div>
+        <canvas class="picture"></canvas>
+        <!-- <div class="log"></div> -->
+
+
+        <!-- // <script src="lib/hammer.min.js"></script> -->
+
+        <script>
+            window.Color = net.brehaut.Color;
+            window.ongoingTouches = [];
+            window.mode = 'sound';
+
+            function startup() {
+                window.canvas = document.querySelector('.picture');
+                window.context = canvas.getContext('2d');
+
+                var radios = document.getElementsByName('mode');
+                for (var i=0, l=radios.length; i < l; i++) {
+                    var r = radios[i];
+                    r.addEventListener('change', function(event) {
+                        if (this.checked) {
+                            window.mode = this.value;
+
+                            if (window.mode=='speak') {
+                                responsiveVoice.speak('Speak Mode');
+                            }
+                        }
+
+                    });
+                }
+
+                window.imageObj = new Image();
+                imageObj.onload = function() {
+                    // context.drawImage(imageObj, 0, 0);
+                    draw();
+                };
+                imageObj.src = '/light-color-spectrum.jpg';
+
+                window.addEventListener('resize', resizeCanvas, false);
+                resizeCanvas();
+
+                document.body.addEventListener('touchmove', function(event) {
+                  event.preventDefault();
+                }, false);
+
+                canvas.addEventListener('touchstart', handleStart, false);
+                canvas.addEventListener('touchend', handleEnd, false);
+                canvas.addEventListener('touchcancel', handleCancel, false);
+                canvas.addEventListener('touchmove', handleMove, false);
+
+                log('initialized');
+
+            }
+
+            function drawImageProp(ctx, img, x, y, w, h, offsetX, offsetY) {
+                // from StackOverflow: https://stackoverflow.com/questions/21961839/simulation-background-size-cover-in-canvas/21961894#21961894
+
+                if (arguments.length === 2) {
+                    x = y = 0;
+                    w = ctx.canvas.width;
+                    h = ctx.canvas.height;
+                }
+
+                // default offset is center
+                offsetX = typeof offsetX === "number" ? offsetX : 0.5;
+                offsetY = typeof offsetY === "number" ? offsetY : 0.5;
+
+                // keep bounds [0.0, 1.0]
+                if (offsetX < 0) offsetX = 0;
+                if (offsetY < 0) offsetY = 0;
+                if (offsetX > 1) offsetX = 1;
+                if (offsetY > 1) offsetY = 1;
+
+                var iw = img.width,
+                    ih = img.height,
+                    r = Math.min(w / iw, h / ih),
+                    nw = iw * r,   // new prop. width
+                    nh = ih * r,   // new prop. height
+                    cx, cy, cw, ch, ar = 1;
+
+                // decide which gap to fill
+                if (nw < w) ar = w / nw;
+                if (Math.abs(ar - 1) < 1e-14 && nh < h) ar = h / nh;  // updated
+                nw *= ar;
+                nh *= ar;
+
+                // calc source rectangle
+                cw = iw / (nw / w);
+                ch = ih / (nh / h);
+
+                cx = (iw - cw) * offsetX;
+                cy = (ih - ch) * offsetY;
+
+                // make sure source rectangle is valid
+                if (cx < 0) cx = 0;
+                if (cy < 0) cy = 0;
+                if (cw > iw) cw = iw;
+                if (ch > ih) ch = ih;
+
+                // fill image in dest. rectangle
+                ctx.drawImage(img, cx, cy, cw, ch,  x, y, w, h);
+            }
+
+            function draw() {
+                drawImageProp(context, imageObj, 0, 0, canvas.width, canvas.height);
+                for (var i=0, j=ongoingTouches.length; i < j; i++) {
+                    // draw circles
+                    context.beginPath();
+                    context.arc(ongoingTouches[i].pageX, ongoingTouches[i].pageY, 50, 0, Math.PI*2, true);
+                    // context.closePath();
+                    // context.fillStyle = ongoingTouches[i].color.toCSSHex();
+                    // context.fill();
+                    context.strokeStyle = ongoingTouches[i].color.toCSSHex();
+                    context.lineWidth = 15;
+                    context.stroke();
+                }
+
+                requestAnimationFrame(draw);
+            }
+
+            function resizeCanvas() {
+                window.canvas.width = window.innerWidth;
+                window.canvas.height = window.innerHeight;
+
+                /**
+                 * Your drawings need to be inside this function otherwise they will be reset when
+                 * you resize the browser window and the canvas goes will be cleared.
+                 */
+                draw();
+            }
+
+            function handleStart(event) {
+                event.preventDefault();
+                log("touchstart.");
+                var touches = event.changedTouches;
+
+                for (var i=0; i < touches.length; i++) {
+                    log("touchstart:" + i + '...');
+                    //pass in some initial values for the filter and filter envelope
+                    //a 4 voice Synth
+
+                    // touches[i].synth = polySynth;
+                    // touches[i].notes = notes;
+                    ongoingTouches.push(copyTouch(touches[i]));
+
+                    var color = colorForTouch(touches[i]);
+
+                    if (!window.asynth) {
+                        // window.asynth = new Tone.PolySynth(2, Tone.MembraneSynth).toMaster();
+                        window.asynth = new Tone.PolySynth(2, Tone.Synth).toMaster();
+                        // window.asynth = new Tone.PolySynth(2, Tone.Synth).connect(tremolo);
+
+                        // //initialize the noise and start
+                        // var noise = new Tone.Noise("pink").start();
+                        //
+                        // //make an autofilter to shape the noise
+                        // var autoFilter = new Tone.AutoFilter({
+                        //     "frequency" : "8m",
+                        //     "min" : 800,
+                        //     "max" : 15000
+                        // }).connect(Tone.Master);
+                        //
+                        // //connect the noise
+                        // noise.connect(autoFilter);
+                        // //start the autofilter LFO
+                        // autoFilter.start();
+
+                    }
+
+                    //play a chord
+                    // console.log(window.asynth);
+                    ongoingTouches[ongoingTouches.length - 1]['color'] = color;
+
+                    if (mode==='sound') {
+                        notes = colorToSound(color);
+                        ongoingTouches[ongoingTouches.length - 1]['notes'] = notes;
+                    } else {
+                        var color_name = ntc.name(color.toCSSHex());
+                        responsiveVoice.speak(color_name[1], "US English Female");
+                    }
+
+                    log("touchstart:" + i + '.');
+                }
+            }
+
+            function handleMove(event) {
+                event.preventDefault();
+                var touches = event.changedTouches;
+
+                for (var i=0; i < touches.length; i++) {
+                    var idx = ongoingTouchIndexById(touches[i].identifier);
+                    var color = colorForTouch(touches[i]);
+                    console.log(touches[i].pageX, touches[i].pageY);
+
+                    if (idx >= 0) {
+                        log("continuing touch "+idx);
+
+                        // context.beginPath();
+                        // log("context.moveTo(" + ongoingTouches[idx].pageX + ", " + ongoingTouches[idx].pageY + ");");
+                        // context.moveTo(ongoingTouches[idx].pageX, ongoingTouches[idx].pageY);
+                        // log("context.lineTo(" + touches[i].pageX + ", " + touches[i].pageY + ");");
+                        // context.lineTo(touches[i].pageX, touches[i].pageY);
+                        // context.lineWidth = 4;
+                        // context.strokeStyle = color;
+                        // context.stroke();
+
+                        ongoingTouches.splice(idx, 1, copyTouch(touches[i]));  // swap in the new touch record
+
+                        if (mode=='sound') {
+                            var notes = ongoingTouches[idx].notes;
+                            if (notes) {
+                                console.log('releasing', idx);
+                                window.asynth.triggerRelease(notes);
+                            }
+
+                            var notes = colorToSound(color);
+                            ongoingTouches[idx]['notes'] = notes;
+                        } else {
+                            var color_name = ntc.name(color.toCSSHex());
+                            responsiveVoice.speak(color_name[1], "US English Female");
+                        }
+
+                        ongoingTouches[idx]['color'] = color;
+
+                        // context.fillStyle = color.toCSSHex();
+
+                        log(".");
+                    } else {
+                        log("can't figure out which touch to continue");
+                    }
+                }
+            }
+
+            function handleEnd(event) {
+                event.preventDefault();
+                log("touchend");
+                var touches = event.changedTouches;
+
+                for (var i = 0; i < touches.length; i++) {
+                    // var color = colorForTouch(touches[i]);
+                    var idx = ongoingTouchIndexById(touches[i].identifier);
+
+                    if (idx >= 0) {
+                        // var polySynth = ongoingTouches[idx].synth;
+                        // console.log(polySynth);
+                        // polySynth.triggerRelease(ongoingTouches[idx].notes);
+                        // context.lineWidth = 4;
+                        // context.fillStyle = color;
+                        // context.beginPath();
+                        // context.moveTo(ongoingTouches[idx].pageX, ongoingTouches[idx].pageY);
+                        // context.lineTo(touches[i].pageX, touches[i].pageY);
+                        // context.fillRect(touches[i].pageX - 4, touches[i].pageY - 4, 8, 8);  // and a square at the end
+                        var notes = ongoingTouches[idx].notes;
+                        if (notes) {
+                            window.asynth.triggerRelease(notes);
+                        }
+
+                        ongoingTouches.splice(idx, 1);  // remove it; we're done
+                        if (!ongoingTouches.length) {
+                            window.asynth.releaseAll();
+                        }
+                    } else {
+                        log("can't figure out which touch to end");
+                    }
+                }
+            }
+
+            function handleCancel(event) {
+                event.preventDefault();
+                log('touchcancel.');
+                var touches = event.changedTouches;
+
+                for (var i = 0; i < touches.length; i++) {
+                    var idx = ongoingTouchIndexById(touches[i].identifier);
+                    if (idx >= 0) {
+                        var notes = ongoingTouches[idx].notes;
+                        if (notes) {
+                            window.asynth.triggerRelease(notes);
+                        }
+                    }
+                    ongoingTouches.splice(i, 1);  // remove it; we're done
+                }
+            }
+
+            function colorForTouch(touch) {
+                var pixel = context.getImageData(touch.pageX, touch.pageY, 1, 1);
+                var r = pixel.data[0],
+                    g = pixel.data[1],
+                    b = pixel.data[2];
+
+                var c = Color([r, g, b]);
+                var hsv = c.toHSV();
+                // console.log(hsv.hue, hsv.saturation, hsv.value);
+                return hsv;
+            }
+
+            function copyTouch(touch) {
+                return { identifier: touch.identifier, pageX: touch.pageX, pageY: touch.pageY, };
+            }
+
+            function ongoingTouchIndexById(idToFind) {
+                log('Ongoing touches: ' + ongoingTouches.length);
+                for (var i = 0; i < ongoingTouches.length; i++) {
+                    var id = ongoingTouches[i].identifier;
+
+                    if (id == idToFind) {
+                        return i;
+                    }
+                }
+                return -1;    // not found
+            }
+
+            function log(msg) {
+                // console.log(msg);
+                return;
+                var div = document.querySelector('.log');
+                div.innerHTML = msg + "<br>" + div.innerHTML;
+            }
+
+            function handleImage(files) {
+                if (!files.length) {
+                    return;
+                }
+
+                var file = files[0];
+
+                var imageType = /^image\//;
+                if (!imageType.test(file.type)) {
+                    console.log('not an image');
+                    return;
+                }
+
+                var reader = new FileReader();
+                reader.onload = function(event) {
+                    var image_data = event.target.result;
+                    imageObj.src = image_data;
+                    draw();
+                }
+                reader.readAsDataURL(file);
+
+            }
+
+            hueNote = {
+                0: 'C5',
+                30: 'G5',
+                60: 'D4',
+                90: 'A5',
+                120: 'E5',
+                150: 'B5',
+                180: 'Gb4',
+                210: 'Db4',
+                240: 'Ab4',
+                270: 'Eb4',
+                300: 'Bb4',
+                330: 'F4',
+                360: 'C5'
+            };
+
+            noteRanges = [
+                [0, 30],
+                [30, 60],
+                [60, 90],
+                [90, 120],
+                [120, 150],
+                [150, 180],
+                [180, 210],
+                [210, 240],
+                [240, 270],
+                [270, 300],
+                [300, 330],
+                [330, 360]
+            ];
+
+            function colorToSound(color) {
+                if (color.saturation < 0.01) {
+                    return;
+                }
+
+                var hue = color.hue;
+                var time = 0.1;
+                var notes;
+                // var durations;
+                var durations = [time, time];
+                // var scale_options = ['4', '5'];
+                // var scale = scale_options[Math.floor(Math.random() * scale_options.length)];
+                // // var scale = '4';
+                var exact_match = hueNote[hue];
+                if (exact_match) {
+                    // notes = [exact_match + scale];
+                    notes = [exact_match, exact_match];
+                    // durations = [time];
+                } else {
+                    for (var i=0, j=noteRanges.length; i < j; i++) {
+                        var range = noteRanges[i];
+                        var min = range[0];
+                        var max = range[1];
+                        if (hue > (min + 1) && hue < (max - 1)) {
+                            // notes = [hueNote[min] + scale, hueNote[max] + scale];
+                            notes = [hueNote[min], hueNote[max]];
+                            durations = [time / 2, time / 2];
+                            break;
+                        }
+                    }
+                }
+                window.asynth.triggerAttack(notes, durations, undefined, color.saturation);
+
+
+                return notes;
+            }
+
+            startup();
+
+
+
+        </script>
+    </body>
+</html>
+
+
+

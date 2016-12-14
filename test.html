@@ -1,0 +1,83 @@
+<html>
+    <head>
+        <script src="/lib/Tone.min.js"></script>
+    </head>
+    <body>
+        <script>
+            // var synth = new Tone.Synth().toMaster();
+            // // synth.triggerAttackRelease("C4", "8n");
+            //
+            // // Hue - Pitch
+            // // Saturation - Timbre
+            // // Value - Volume
+            // //play a note every quarter-note
+            // var loop = new Tone.Loop(function(time){
+            //     synth.triggerAttackRelease("C2", "8n", time);
+            // }, "4n");
+            // //loop between the first and fourth measures of the Transport's timeline
+            // loop.start("1m").stop("4m");
+            // Tone.Transport.start();
+
+            // //pass in some initial values for the filter and filter envelope
+            // //a 4 voice Synth
+            // var polySynth = new Tone.PolySynth(4, Tone.Synth).toMaster();
+            // //play a chord
+            // // polySynth.triggerAttackRelease(["C4", "E4", "G4", "B4"], "2n");
+            // polySynth.triggerAttackRelease([440, 100, 200, 800, 50], "2n");
+
+            // //create a distortion effect
+            // var distortion = new Tone.Distortion(0.4).toMaster();
+            // //connect a synth to the distortion
+            // polySynth.connect(distortion);
+
+            //a pwm oscillator which is connected to the speaker and started right away
+            // var pwm = new Tone.PWMOscillator("Bb3").toMaster().start();
+            //trigger the start of a note.
+
+
+            // var synth = new Tone.Synth().toMaster();
+            // //trigger "C4" and then 1 second later trigger the release
+            // synth.triggerAttackRelease("C4", 1);
+
+        //a square wave at 440hz
+        // var osc = new Tone.Oscillator(440, "square")
+        //     .toMaster() //connected to the master output
+        //     .start(); // start it right away
+
+        // var fmOsc = new Tone.FatOscillator(100, "sine", "square").toMaster().start();
+
+        //initialize the noise and start
+        // var noise = new Tone.Noise("pink").start();
+        //
+        // //make an autofilter to shape the noise
+        // var autoFilter = new Tone.AutoFilter({
+        //     "frequency" : "8m",
+        //     "min" : 800,
+        //     "max" : 15000
+        // }).connect(Tone.Master);
+        //
+        // //connect the noise
+        // noise.connect(autoFilter);
+        // //start the autofilter LFO
+        // autoFilter.start()
+
+        // var synth = new Tone.Synth().toMaster();
+        // synth.triggerAttackRelease("C4", "8n");
+
+        var synth = new Tone.SimpleSynth();
+        synth.toMaster();
+        var pattern = new Tone.Pattern(function(time, note){
+            synth.triggerAttackRelease(note, 0.25);
+        }, ["C4", "E4", "G4", "A4"]);
+        //begin at the beginning
+        // pattern.start(0);
+        // Tone.Transport.start();
+
+        //create a tremolo and start it's LFO
+        var tremolo = new Tone.Tremolo(9, 0.75).toMaster().start();
+        //route an oscillator through the tremolo and start it
+        var oscillator = new Tone.Oscillator().connect(tremolo).start();
+
+        </script>
+    </body>
+</html>
