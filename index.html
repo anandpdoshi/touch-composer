@@ -12,6 +12,7 @@
         <script src="lib/color.js"></script>
         <script src="lib/ntc.js"></script>
         <script src='lib/responsivevoice.js'></script>
+        <script src='lib/howler.js'></script>
         <!-- // <script src="https://jsconsole.com/js/remote.js?alsjdlqijwlsajdasadhkasjhdjklqwueihq"></script> -->
 
 
@@ -169,7 +170,7 @@
                 for (var i=0, j=ongoingTouches.length; i < j; i++) {
                     // draw circles
                     context.beginPath();
-                    context.arc(ongoingTouches[i].pageX, ongoingTouches[i].pageY, 50, 0, Math.PI*2, true);
+                    context.arc(ongoingTouches[i].pageX, ongoingTouches[i].pageY - 100, 50, 0, Math.PI*2, true);
                     // context.closePath();
                     // context.fillStyle = ongoingTouches[i].color.toCSSHex();
                     // context.fill();
@@ -210,7 +211,7 @@
 
                     if (!window.asynth) {
                         // window.asynth = new Tone.PolySynth(2, Tone.MembraneSynth).toMaster();
-                        window.asynth = new Tone.PolySynth(2, Tone.Synth).toMaster();
+                        window.asynth = new Tone.PolySynth(2, Tone.SimpleSynth).toMaster();
                         // window.asynth = new Tone.PolySynth(2, Tone.Synth).connect(tremolo);
 
                         // //initialize the noise and start
@@ -239,7 +240,7 @@
                         ongoingTouches[ongoingTouches.length - 1]['notes'] = notes;
                     } else {
                         var color_name = ntc.name(color.toCSSHex());
-                        responsiveVoice.speak(color_name[1], "US English Female");
+                        speak(color_name[1]);
                     }
 
                     log("touchstart:" + i + '.');
@@ -270,17 +271,17 @@
                         ongoingTouches.splice(idx, 1, copyTouch(touches[i]));  // swap in the new touch record
 
                         if (mode=='sound') {
-                            var notes = ongoingTouches[idx].notes;
-                            if (notes) {
-                                console.log('releasing', idx);
-                                window.asynth.triggerRelease(notes);
-                            }
+                            // var notes = ongoingTouches[idx].notes;
+                            // if (notes) {
+                            //     console.log('releasing', idx);
+                            //     window.asynth.triggerRelease(notes);
+                            // }
 
                             var notes = colorToSound(color);
                             ongoingTouches[idx]['notes'] = notes;
                         } else {
                             var color_name = ntc.name(color.toCSSHex());
-                            responsiveVoice.speak(color_name[1], "US English Female");
+                            speak(color_name[1]);
                         }
 
                         ongoingTouches[idx]['color'] = color;
@@ -313,10 +314,10 @@
                         // context.moveTo(ongoingTouches[idx].pageX, ongoingTouches[idx].pageY);
                         // context.lineTo(touches[i].pageX, touches[i].pageY);
                         // context.fillRect(touches[i].pageX - 4, touches[i].pageY - 4, 8, 8);  // and a square at the end
-                        var notes = ongoingTouches[idx].notes;
-                        if (notes) {
-                            window.asynth.triggerRelease(notes);
-                        }
+                        // var notes = ongoingTouches[idx].notes;
+                        // if (notes) {
+                        //     window.asynth.triggerRelease(notes);
+                        // }
 
                         ongoingTouches.splice(idx, 1);  // remove it; we're done
                         if (!ongoingTouches.length) {
@@ -334,13 +335,13 @@
                 var touches = event.changedTouches;
 
                 for (var i = 0; i < touches.length; i++) {
-                    var idx = ongoingTouchIndexById(touches[i].identifier);
-                    if (idx >= 0) {
-                        var notes = ongoingTouches[idx].notes;
-                        if (notes) {
-                            window.asynth.triggerRelease(notes);
-                        }
-                    }
+                    // var idx = ongoingTouchIndexById(touches[i].identifier);
+                    // if (idx >= 0) {
+                    //     var notes = ongoingTouches[idx].notes;
+                    //     if (notes) {
+                    //         window.asynth.triggerRelease(notes);
+                    //     }
+                    // }
                     ongoingTouches.splice(i, 1);  // remove it; we're done
                 }
             }
@@ -440,10 +441,10 @@
                 }
 
                 var hue = color.hue;
-                var time = 0.1;
+                var time = "2n";
                 var notes;
                 // var durations;
-                var durations = [time, time];
+                var durations = "2n"; //[time, time];
                 // var scale_options = ['4', '5'];
                 // var scale = scale_options[Math.floor(Math.random() * scale_options.length)];
                 // // var scale = '4';
@@ -460,20 +461,391 @@
                         if (hue > (min + 1) && hue < (max - 1)) {
                             // notes = [hueNote[min] + scale, hueNote[max] + scale];
                             notes = [hueNote[min], hueNote[max]];
-                            durations = [time / 2, time / 2];
+                            // durations = [time / 2, time / 2];
                             break;
                         }
                     }
                 }
-                window.asynth.triggerAttack(notes, durations, undefined, color.saturation);
+                window.asynth.triggerAttackRelease(notes, durations, undefined, color.saturation);
 
 
                 return notes;
             }
 
+            function speak(color_name) {
+                if(window.speak_timeout) {
+                    clearTimeout(window.speak);
+                }
+
+                if (window.previous_color == color_name) {
+                    return;
+                }
+
+                window.previous_color = color_name;
+
+                window.speak_timeout = setTimeout(function() {
+                    responsiveVoice.speak(color_name, "US English Female");
+                }, 500);
+
+            }
+
             startup();
 
 
+
+        </script>
+
+        <script>
+            window.piano_sprite = {
+             "resources": [
+              "audio/piano.ogg",
+              "audio/piano.m4a",
+              "audio/piano.mp3",
+              "audio/piano.ac3"
+             ],
+             "spritemap": {
+              "A#0": {
+               "end": 4.405351473922902,
+               "loop": false,
+               "start": 3
+              },
+              "A#1": {
+               "end": 37.405532879818594,
+               "loop": false,
+               "start": 36
+              },
+              "A#2": {
+               "end": 70.40489795918367,
+               "loop": false,
+               "start": 69
+              },
+              "A#3": {
+               "end": 103.40480725623583,
+               "loop": false,
+               "start": 102
+              },
+              "A#4": {
+               "end": 136.40281179138321,
+               "loop": false,
+               "start": 135
+              },
+              "A#5": {
+               "end": 169.40616780045352,
+               "loop": false,
+               "start": 168
+              },
+              "A0": {
+               "end": 1.4024489795918367,
+               "loop": false,
+               "start": 0
+              },
+              "A1": {
+               "end": 34.403990929705216,
+               "loop": false,
+               "start": 33
+              },
+              "A2": {
+               "end": 67.40462585034014,
+               "loop": false,
+               "start": 66
+              },
+              "A3": {
+               "end": 100.40353741496598,
+               "loop": false,
+               "start": 99
+              },
+              "A4": {
+               "end": 133.40326530612245,
+               "loop": false,
+               "start": 132
+              },
+              "A5": {
+               "end": 166.40607709750566,
+               "loop": false,
+               "start": 165
+              },
+              "B0": {
+               "end": 7.4045351473922905,
+               "loop": false,
+               "start": 6
+              },
+              "B1": {
+               "end": 40.40253968253968,
+               "loop": false,
+               "start": 39
+              },
+              "B2": {
+               "end": 73.40489795918367,
+               "loop": false,
+               "start": 72
+              },
+              "B3": {
+               "end": 106.40263038548753,
+               "loop": false,
+               "start": 105
+              },
+              "B4": {
+               "end": 139.4038095238095,
+               "loop": false,
+               "start": 138
+              },
+              "B5": {
+               "end": 172.40625850340135,
+               "loop": false,
+               "start": 171
+              },
+              "C#1": {
+               "end": 13.404444444444444,
+               "loop": false,
+               "start": 12
+              },
+              "C#2": {
+               "end": 46.40571428571428,
+               "loop": false,
+               "start": 45
+              },
+              "C#3": {
+               "end": 79.40480725623583,
+               "loop": false,
+               "start": 78
+              },
+              "C#4": {
+               "end": 112.40090702947846,
+               "loop": false,
+               "start": 111
+              },
+              "C#5": {
+               "end": 145.40471655328798,
+               "loop": false,
+               "start": 144
+              },
+              "C#6": {
+               "end": 178.40616780045352,
+               "loop": false,
+               "start": 177
+              },
+              "C1": {
+               "end": 10.402993197278912,
+               "loop": false,
+               "start": 9
+              },
+              "C2": {
+               "end": 43.404172335600904,
+               "loop": false,
+               "start": 42
+              },
+              "C3": {
+               "end": 76.40353741496598,
+               "loop": false,
+               "start": 75
+              },
+              "C4": {
+               "end": 109.4031746031746,
+               "loop": false,
+               "start": 108
+              },
+              "C5": {
+               "end": 142.40253968253967,
+               "loop": false,
+               "start": 141
+              },
+              "C6": {
+               "end": 175.4065306122449,
+               "loop": false,
+               "start": 174
+              },
+              "D#1": {
+               "end": 19.40598639455782,
+               "loop": false,
+               "start": 18
+              },
+              "D#2": {
+               "end": 52.406077097505666,
+               "loop": false,
+               "start": 51
+              },
+              "D#3": {
+               "end": 85.40462585034014,
+               "loop": false,
+               "start": 84
+              },
+              "D#4": {
+               "end": 118.4031746031746,
+               "loop": false,
+               "start": 117
+              },
+              "D#5": {
+               "end": 151.40544217687074,
+               "loop": false,
+               "start": 150
+              },
+              "D#6": {
+               "end": 184.40598639455783,
+               "loop": false,
+               "start": 183
+              },
+              "D1": {
+               "end": 16.40598639455782,
+               "loop": false,
+               "start": 15
+              },
+              "D2": {
+               "end": 49.40589569160998,
+               "loop": false,
+               "start": 48
+              },
+              "D3": {
+               "end": 82.40390022675737,
+               "loop": false,
+               "start": 81
+              },
+              "D4": {
+               "end": 115.40544217687075,
+               "loop": false,
+               "start": 114
+              },
+              "D5": {
+               "end": 148.40616780045352,
+               "loop": false,
+               "start": 147
+              },
+              "D6": {
+               "end": 181.40616780045352,
+               "loop": false,
+               "start": 180
+              },
+              "E1": {
+               "end": 22.403083900226758,
+               "loop": false,
+               "start": 21
+              },
+              "E2": {
+               "end": 55.40462585034014,
+               "loop": false,
+               "start": 54
+              },
+              "E3": {
+               "end": 88.40326530612245,
+               "loop": false,
+               "start": 87
+              },
+              "E4": {
+               "end": 121.40263038548753,
+               "loop": false,
+               "start": 120
+              },
+              "E5": {
+               "end": 154.403537414966,
+               "loop": false,
+               "start": 153
+              },
+              "E6": {
+               "end": 187.40616780045352,
+               "loop": false,
+               "start": 186
+              },
+              "E8": {
+               "end": 193.40616780045352,
+               "loop": false,
+               "start": 192
+              },
+              "F#1": {
+               "end": 28.40244897959184,
+               "loop": false,
+               "start": 27
+              },
+              "F#2": {
+               "end": 61.40380952380952,
+               "loop": false,
+               "start": 60
+              },
+              "F#3": {
+               "end": 94.40253968253968,
+               "loop": false,
+               "start": 93
+              },
+              "F#4": {
+               "end": 127.40299319727892,
+               "loop": false,
+               "start": 126
+              },
+              "F#5": {
+               "end": 160.40517006802722,
+               "loop": false,
+               "start": 159
+              },
+              "F#8": {
+               "end": 199.40616780045352,
+               "loop": false,
+               "start": 198
+              },
+              "F1": {
+               "end": 25.404444444444444,
+               "loop": false,
+               "start": 24
+              },
+              "F2": {
+               "end": 58.403083900226754,
+               "loop": false,
+               "start": 57
+              },
+              "F3": {
+               "end": 91.40598639455783,
+               "loop": false,
+               "start": 90
+              },
+              "F4": {
+               "end": 124.40408163265306,
+               "loop": false,
+               "start": 123
+              },
+              "F5": {
+               "end": 157.40607709750566,
+               "loop": false,
+               "start": 156
+              },
+              "F6": {
+               "end": 190.40616780045352,
+               "loop": false,
+               "start": 189
+              },
+              "F8": {
+               "end": 196.40616780045352,
+               "loop": false,
+               "start": 195
+              },
+              "G1": {
+               "end": 31.406167800453513,
+               "loop": false,
+               "start": 30
+              },
+              "G2": {
+               "end": 64.40689342403628,
+               "loop": false,
+               "start": 63
+              },
+              "G3": {
+               "end": 97.40589569160997,
+               "loop": false,
+               "start": 96
+              },
+              "G4": {
+               "end": 130.4033560090703,
+               "loop": false,
+               "start": 129
+              },
+              "G5": {
+               "end": 163.40426303854875,
+               "loop": false,
+               "start": 162
+              },
+              "G8": {
+               "end": 202.4053514739229,
+               "loop": false,
+               "start": 201
+              }
+             }
+            }
 
         </script>
     </body>

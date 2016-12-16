@@ -64,19 +64,58 @@
         // var synth = new Tone.Synth().toMaster();
         // synth.triggerAttackRelease("C4", "8n");
 
-        var synth = new Tone.SimpleSynth();
-        synth.toMaster();
-        var pattern = new Tone.Pattern(function(time, note){
-            synth.triggerAttackRelease(note, 0.25);
-        }, ["C4", "E4", "G4", "A4"]);
+        // var synth = new Tone.SimpleSynth();
+        // synth.toMaster();
+        // var pattern = new Tone.Pattern(function(time, note){
+        //     synth.triggerAttackRelease(note, 0.25);
+        // }, ["C4", "E4", "G4", "A4"]);
         //begin at the beginning
         // pattern.start(0);
         // Tone.Transport.start();
 
-        //create a tremolo and start it's LFO
-        var tremolo = new Tone.Tremolo(9, 0.75).toMaster().start();
-        //route an oscillator through the tremolo and start it
-        var oscillator = new Tone.Oscillator().connect(tremolo).start();
+        // //create a tremolo and start it's LFO
+        // var tremolo = new Tone.Tremolo(9, 0.75).toMaster().start();
+        // //route an oscillator through the tremolo and start it
+        // var oscillator = new Tone.Oscillator().connect(tremolo).start();
+
+        // var synth = new Tone.PolySynth(10, Tone.SimpleSynth);
+        // synth.toMaster();
+        //
+        // synth.set({'envelope': {'attack': 0.5}})
+        //
+        // var pattern = new Tone.Pattern(function(time, note) {
+        //     synth.triggerAttackRelease(note, 0.25);
+        // }, ['C4', 'E4', 'G4', 'A4']);
+        //
+        // pattern.start(0);
+        //
+        // Tone.Transport.start();
+
+        // synth.triggerAttackRelease('C4', 0.25);
+
+        // var osc = new Tone.OmniOscillator();
+        // osc.frequency.value = "C4";
+        // osc.start().stop("+8n");
+        //
+        // var env = new Tone.AmplitudeEnvelope();
+        // osc.connect(env);
+        // env.toMaster();
+        //
+        // env.triggerAttack();
+        //
+        // var pattern = new Tone.Pattern(function(time, note) {
+        //     osc.frequency.value = note;
+        //     env.triggerAttackRelease("2n");
+        //     osc.start().stop("+2n");
+        //
+        // }, ['C4', 'E4', 'G4', 'A4']);
+        //
+        // pattern.start(0);
+        //
+        // Tone.Transport.start();
+
+        //a pwm oscillator which is connected to the speaker and started right away
+        var pwm = new Tone.PWMOscillator("Bb3").toMaster().start();
 
         </script>
     </body>
