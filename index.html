@@ -12,7 +12,6 @@
         <script src="lib/color.js"></script>
         <script src="lib/ntc.js"></script>
         <script src='lib/responsivevoice.js'></script>
-        <script src='lib/howler.js'></script>
         <!-- // <script src="https://jsconsole.com/js/remote.js?alsjdlqijwlsajdasadhkasjhdjklqwueihq"></script> -->
 
 
@@ -111,6 +110,99 @@
                 canvas.addEventListener('touchend', handleEnd, false);
                 canvas.addEventListener('touchcancel', handleCancel, false);
                 canvas.addEventListener('touchmove', handleMove, false);
+
+                window.pianoSamples = new Tone.Buffers({
+                    "A0": "audio/A0.wav",
+                    "Ab0": "audio/Ab0.wav",
+                    "B0": "audio/B0.wav",
+                    "C1": "audio/C1.wav",
+                    "Cb1": "audio/Cb1.wav",
+                    "D1": "audio/D1.wav",
+                    "Db1": "audio/Db1.wav",
+                    "E1": "audio/E1.wav",
+                    "F1": "audio/F1.wav",
+                    "Fb1": "audio/Fb1.wav",
+                    "G1": "audio/G1.wav",
+                    "A1": "audio/A1.wav",
+                    "Ab1": "audio/Ab1.wav",
+                    "B1": "audio/B1.wav",
+                    "C2": "audio/C2.wav",
+                    "Cb2": "audio/Cb2.wav",
+                    "D2": "audio/D2.wav",
+                    "Db2": "audio/Db2.wav",
+                    "E2": "audio/E2.wav",
+                    "F2": "audio/F2.wav",
+                    "Fb2": "audio/Fb2.wav",
+                    "G2": "audio/G2.wav",
+                    "A2": "audio/A2.wav",
+                    "Ab2": "audio/Ab2.wav",
+                    "B2": "audio/B2.wav",
+                    "C3": "audio/C3.wav",
+                    "Cb3": "audio/Cb3.wav",
+                    "D3": "audio/D3.wav",
+                    "Db3": "audio/Db3.wav",
+                    "E3": "audio/E3.wav",
+                    "F3": "audio/F3.wav",
+                    "Fb3": "audio/Fb3.wav",
+                    "G3": "audio/G3.wav",
+                    "A3": "audio/A3.wav",
+                    "Ab3": "audio/Ab3.wav",
+                    "B3": "audio/B3.wav",
+                    "C4": "audio/C4.wav",
+                    "Cb4": "audio/Cb4.wav",
+                    "D4": "audio/D4.wav",
+                    "Db4": "audio/Db4.wav",
+                    "E4": "audio/E4.wav",
+                    "F4": "audio/F4.wav",
+                    "Fb4": "audio/Fb4.wav",
+                    "G4": "audio/G4.wav",
+                    "A4": "audio/A4.wav",
+                    "Ab4": "audio/Ab4.wav",
+                    "B4": "audio/B4.wav",
+                    "C5": "audio/C5.wav",
+                    "Cb5": "audio/Cb5.wav",
+                    "D5": "audio/D5.wav",
+                    "Db5": "audio/Db5.wav",
+                    "E5": "audio/E5.wav",
+                    "F5": "audio/F5.wav",
+                    "Fb5": "audio/Fb5.wav",
+                    "G5": "audio/G5.wav",
+                    "A5": "audio/A5.wav",
+                    "Ab5": "audio/Ab5.wav",
+                    "B5": "audio/B5.wav",
+                    // "C6": "audio/C6.wav",
+                    // "Cb6": "audio/Cb6.wav",
+                    // "D6": "audio/D6.wav",
+                    // "Db6": "audio/Db6.wav",
+                    // "E6": "audio/E6.wav",
+                    // "F6": "audio/F6.wav",
+                    // "Fb6": "audio/Fb6.wav",
+                    // "G6": "audio/G6.wav",
+                    // "A6": "audio/A6.wav",
+                    // "Ab6": "audio/Ab6.wav",
+                    // "B6": "audio/B6.wav",
+                    // "C7": "audio/C7.wav",
+                    // "Cb7": "audio/Cb7.wav",
+                    // "D7": "audio/D7.wav",
+                    // "Db7": "audio/Db7.wav",
+                    // "E7": "audio/E7.wav",
+                    // "F7": "audio/F7.wav",
+                    // "Fb7": "audio/Fb7.wav",
+                    // "G7": "audio/G7.wav",
+                    // "A7": "audio/A7.wav",
+                    // "Ab7": "audio/Ab7.wav",
+                    // "B7": "audio/B7.wav",
+                    // "C8": "audio/C8.wav",
+                    // "Cb8": "audio/Cb8.wav",
+                    // "D8": "audio/D8.wav",
+                    // "Db8": "audio/Db8.wav",
+                    // "E8": "audio/E8.wav",
+                    // "F8": "audio/F8.wav",
+                    // "Fb8": "audio/Fb8.wav",
+                    // "G8": "audio/G8.wav"
+                }, function() {
+                    console.log('buffers loaded');
+                });
 
                 log('initialized');
 
@@ -211,7 +303,9 @@
 
                     if (!window.asynth) {
                         // window.asynth = new Tone.PolySynth(2, Tone.MembraneSynth).toMaster();
-                        window.asynth = new Tone.PolySynth(2, Tone.SimpleSynth).toMaster();
+
+                        // window.asynth = new Tone.PolySynth(88, Tone.Sampler, ).toMaster();
+
                         // window.asynth = new Tone.PolySynth(2, Tone.Synth).connect(tremolo);
 
                         // //initialize the noise and start
@@ -405,19 +499,19 @@
             }
 
             hueNote = {
-                0: 'C5',
-                30: 'G5',
-                60: 'D4',
-                90: 'A5',
-                120: 'E5',
-                150: 'B5',
-                180: 'Gb4',
-                210: 'Db4',
-                240: 'Ab4',
-                270: 'Eb4',
-                300: 'Bb4',
-                330: 'F4',
-                360: 'C5'
+                0: 'C',
+                30: 'G',
+                60: 'D',
+                90: 'A',
+                120: 'E',
+                150: 'B',
+                180: 'Gb',
+                210: 'Db',
+                240: 'Ab',
+                270: 'Eb',
+                300: 'Bb',
+                330: 'F',
+                360: 'C'
             };
 
             noteRanges = [
@@ -442,31 +536,25 @@
 
                 var hue = color.hue;
                 var time = "2n";
-                var notes;
-                // var durations;
-                var durations = "2n"; //[time, time];
+                var note;
                 // var scale_options = ['4', '5'];
                 // var scale = scale_options[Math.floor(Math.random() * scale_options.length)];
                 // // var scale = '4';
                 var exact_match = hueNote[hue];
                 if (exact_match) {
-                    // notes = [exact_match + scale];
-                    notes = [exact_match, exact_match];
-                    // durations = [time];
+                    note = exact_match;
                 } else {
                     for (var i=0, j=noteRanges.length; i < j; i++) {
                         var range = noteRanges[i];
                         var min = range[0];
                         var max = range[1];
                         if (hue > (min + 1) && hue < (max - 1)) {
-                            // notes = [hueNote[min] + scale, hueNote[max] + scale];
-                            notes = [hueNote[min], hueNote[max]];
-                            // durations = [time / 2, time / 2];
+                            note = hueNote[min];
                             break;
                         }
                     }
                 }
-                window.asynth.triggerAttackRelease(notes, durations, undefined, color.saturation);
+                // window.asynth.triggerAttackRelease(notes, durations, undefined, color.saturation);
 
 
                 return notes;
@@ -492,360 +580,6 @@
             startup();
 
 
-
-        </script>
-
-        <script>
-            window.piano_sprite = {
-             "resources": [
-              "audio/piano.ogg",
-              "audio/piano.m4a",
-              "audio/piano.mp3",
-              "audio/piano.ac3"
-             ],
-             "spritemap": {
-              "A#0": {
-               "end": 4.405351473922902,
-               "loop": false,
-               "start": 3
-              },
-              "A#1": {
-               "end": 37.405532879818594,
-               "loop": false,
-               "start": 36
-              },
-              "A#2": {
-               "end": 70.40489795918367,
-               "loop": false,
-               "start": 69
-              },
-              "A#3": {
-               "end": 103.40480725623583,
-               "loop": false,
-               "start": 102
-              },
-              "A#4": {
-               "end": 136.40281179138321,
-               "loop": false,
-               "start": 135
-              },
-              "A#5": {
-               "end": 169.40616780045352,
-               "loop": false,
-               "start": 168
-              },
-              "A0": {
-               "end": 1.4024489795918367,
-               "loop": false,
-               "start": 0
-              },
-              "A1": {
-               "end": 34.403990929705216,
-               "loop": false,
-               "start": 33
-              },
-              "A2": {
-               "end": 67.40462585034014,
-               "loop": false,
-               "start": 66
-              },
-              "A3": {
-               "end": 100.40353741496598,
-               "loop": false,
-               "start": 99
-              },
-              "A4": {
-               "end": 133.40326530612245,
-               "loop": false,
-               "start": 132
-              },
-              "A5": {
-               "end": 166.40607709750566,
-               "loop": false,
-               "start": 165
-              },
-              "B0": {
-               "end": 7.4045351473922905,
-               "loop": false,
-               "start": 6
-              },
-              "B1": {
-               "end": 40.40253968253968,
-               "loop": false,
-               "start": 39
-              },
-              "B2": {
-               "end": 73.40489795918367,
-               "loop": false,
-               "start": 72
-              },
-              "B3": {
-               "end": 106.40263038548753,
-               "loop": false,
-               "start": 105
-              },
-              "B4": {
-               "end": 139.4038095238095,
-               "loop": false,
-               "start": 138
-              },
-              "B5": {
-               "end": 172.40625850340135,
-               "loop": false,
-               "start": 171
-              },
-              "C#1": {
-               "end": 13.404444444444444,
-               "loop": false,
-               "start": 12
-              },
-              "C#2": {
-               "end": 46.40571428571428,
-               "loop": false,
-               "start": 45
-              },
-              "C#3": {
-               "end": 79.40480725623583,
-               "loop": false,
-               "start": 78
-              },
-              "C#4": {
-               "end": 112.40090702947846,
-               "loop": false,
-               "start": 111
-              },
-              "C#5": {
-               "end": 145.40471655328798,
-               "loop": false,
-               "start": 144
-              },
-              "C#6": {
-               "end": 178.40616780045352,
-               "loop": false,
-               "start": 177
-              },
-              "C1": {
-               "end": 10.402993197278912,
-               "loop": false,
-               "start": 9
-              },
-              "C2": {
-               "end": 43.404172335600904,
-               "loop": false,
-               "start": 42
-              },
-              "C3": {
-               "end": 76.40353741496598,
-               "loop": false,
-               "start": 75
-              },
-              "C4": {
-               "end": 109.4031746031746,
-               "loop": false,
-               "start": 108
-              },
-              "C5": {
-               "end": 142.40253968253967,
-               "loop": false,
-               "start": 141
-              },
-              "C6": {
-               "end": 175.4065306122449,
-               "loop": false,
-               "start": 174
-              },
-              "D#1": {
-               "end": 19.40598639455782,
-               "loop": false,
-               "start": 18
-              },
-              "D#2": {
-               "end": 52.406077097505666,
-               "loop": false,
-               "start": 51
-              },
-              "D#3": {
-               "end": 85.40462585034014,
-               "loop": false,
-               "start": 84
-              },
-              "D#4": {
-               "end": 118.4031746031746,
-               "loop": false,
-               "start": 117
-              },
-              "D#5": {
-               "end": 151.40544217687074,
-               "loop": false,
-               "start": 150
-              },
-              "D#6": {
-               "end": 184.40598639455783,
-               "loop": false,
-               "start": 183
-              },
-              "D1": {
-               "end": 16.40598639455782,
-               "loop": false,
-               "start": 15
-              },
-              "D2": {
-               "end": 49.40589569160998,
-               "loop": false,
-               "start": 48
-              },
-              "D3": {
-               "end": 82.40390022675737,
-               "loop": false,
-               "start": 81
-              },
-              "D4": {
-               "end": 115.40544217687075,
-               "loop": false,
-               "start": 114
-              },
-              "D5": {
-               "end": 148.40616780045352,
-               "loop": false,
-               "start": 147
-              },
-              "D6": {
-               "end": 181.40616780045352,
-               "loop": false,
-               "start": 180
-              },
-              "E1": {
-               "end": 22.403083900226758,
-               "loop": false,
-               "start": 21
-              },
-              "E2": {
-               "end": 55.40462585034014,
-               "loop": false,
-               "start": 54
-              },
-              "E3": {
-               "end": 88.40326530612245,
-               "loop": false,
-               "start": 87
-              },
-              "E4": {
-               "end": 121.40263038548753,
-               "loop": false,
-               "start": 120
-              },
-              "E5": {
-               "end": 154.403537414966,
-               "loop": false,
-               "start": 153
-              },
-              "E6": {
-               "end": 187.40616780045352,
-               "loop": false,
-               "start": 186
-              },
-              "E8": {
-               "end": 193.40616780045352,
-               "loop": false,
-               "start": 192
-              },
-              "F#1": {
-               "end": 28.40244897959184,
-               "loop": false,
-               "start": 27
-              },
-              "F#2": {
-               "end": 61.40380952380952,
-               "loop": false,
-               "start": 60
-              },
-              "F#3": {
-               "end": 94.40253968253968,
-               "loop": false,
-               "start": 93
-              },
-              "F#4": {
-               "end": 127.40299319727892,
-               "loop": false,
-               "start": 126
-              },
-              "F#5": {
-               "end": 160.40517006802722,
-               "loop": false,
-               "start": 159
-              },
-              "F#8": {
-               "end": 199.40616780045352,
-               "loop": false,
-               "start": 198
-              },
-              "F1": {
-               "end": 25.404444444444444,
-               "loop": false,
-               "start": 24
-              },
-              "F2": {
-               "end": 58.403083900226754,
-               "loop": false,
-               "start": 57
-              },
-              "F3": {
-               "end": 91.40598639455783,
-               "loop": false,
-               "start": 90
-              },
-              "F4": {
-               "end": 124.40408163265306,
-               "loop": false,
-               "start": 123
-              },
-              "F5": {
-               "end": 157.40607709750566,
-               "loop": false,
-               "start": 156
-              },
-              "F6": {
-               "end": 190.40616780045352,
-               "loop": false,
-               "start": 189
-              },
-              "F8": {
-               "end": 196.40616780045352,
-               "loop": false,
-               "start": 195
-              },
-              "G1": {
-               "end": 31.406167800453513,
-               "loop": false,
-               "start": 30
-              },
-              "G2": {
-               "end": 64.40689342403628,
-               "loop": false,
-               "start": 63
-              },
-              "G3": {
-               "end": 97.40589569160997,
-               "loop": false,
-               "start": 96
-              },
-              "G4": {
-               "end": 130.4033560090703,
-               "loop": false,
-               "start": 129
-              },
-              "G5": {
-               "end": 163.40426303854875,
-               "loop": false,
-               "start": 162
-              },
-              "G8": {
-               "end": 202.4053514739229,
-               "loop": false,
-               "start": 201
-              }
-             }
-            }
 
         </script>
     </body>
